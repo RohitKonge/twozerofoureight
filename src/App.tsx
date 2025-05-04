@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import Board from './components/Board';
 import GameInstructions from './components/GameInstructions';
 import NewGameDialog from './components/NewGameDialog';
+import { Undo } from 'lucide-react';
 import useGameLogic from './hooks/useGameLogic';
 
 function App() {
-  const { resetGame, score, bestScore, grid, gameOver, won, handleKeyDown, initializeTouchListeners } = useGameLogic();
+  const { resetGame, score, bestScore, grid, gameOver, won, handleKeyDown, initializeTouchListeners, canUndo, undo } = useGameLogic();
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
 
   const handleNewGameClick = () => {
@@ -32,15 +33,23 @@ function App() {
         </div>
 
         {/* Score display */}
-        <div className="flex justify-center mt-6 mb-8">
+        <div className="flex justify-center items-center gap-4 mt-6 mb-8">
           <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl py-2 px-4 shadow-lg flex-1 mr-4 max-w-[160px] flex flex-col items-center justify-center">
-            <div className="text-2xl text-amber-800 font-bold uppercase tracking-wide">Score</div>
+            <div className="text-sm text-amber-800 font-bold uppercase tracking-wide">Score</div>
             <div className="text-3xl font-bold text-amber-900">{score}</div>
           </div>
           <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl py-2 px-4 shadow-lg flex-1 max-w-[160px] flex flex-col items-center justify-center">
-            <div className="text-2xl text-amber-800 font-bold uppercase tracking-wide">Best</div>
+            <div className="text-sm text-amber-800 font-bold uppercase tracking-wide">Best</div>
             <div className="text-3xl font-bold text-amber-900">{bestScore}</div>
           </div>
+          <button
+            onClick={undo}
+            disabled={!canUndo()}
+            className="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold p-3 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center"
+            aria-label="Undo Move"
+          >
+            <Undo size={24} />
+          </button>
         </div>
         
         <div className="mt-4">

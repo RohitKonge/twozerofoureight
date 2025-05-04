@@ -4,6 +4,11 @@ import { TileType, Grid } from '../types';
 // Generate a unique ID for each tile
 let nextId = 1;
 
+interface GameState {
+  grid: Grid;
+  score: number;
+}
+
 const useGameLogic = () => {
   const [grid, setGrid] = useState<Grid>(() => {
     // Initialize with a 4x4 grid of null values
@@ -13,6 +18,7 @@ const useGameLogic = () => {
   const [bestScore, setBestScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [history, setHistory] = useState<GameState[]>([]);
 
   // Initialize game
   useEffect(() => {
@@ -75,6 +81,7 @@ const useGameLogic = () => {
     setScore(0);
     setGameOver(false);
     setWon(false);
+    setHistory([]);
   }, [initializeGrid]);
 
   // Check if there are any possible moves left
@@ -94,9 +101,9 @@ const useGameLogic = () => {
   }, [getEmptyCells]);
 
   // Move and merge tiles in a single row or column
-  const mergeLine = (line: TileType[]): [TileType[], number] => {
+  const mergeLine = (line: (TileType | null)[]): [(TileType | null)[], number] => {
     // Remove null values
-    const nonEmptyTiles = line.filter(tile => tile !== null);
+    const nonEmptyTiles = line.filter((tile): tile is TileType => tile !== null);
     let additionalScore = 0;
     
     // Merge adjacent tiles with same value
@@ -110,11 +117,12 @@ const useGameLogic = () => {
     }
     
     // Fill with nulls to maintain grid size
-    while (nonEmptyTiles.length < 4) {
-      nonEmptyTiles.push(null);
+    const result: (TileType | null)[] = [...nonEmptyTiles];
+    while (result.length < 4) {
+      result.push(null);
     }
     
-    return [nonEmptyTiles, additionalScore];
+    return [result, additionalScore];
   };
 
   // Move tiles in the specified direction
@@ -127,7 +135,7 @@ const useGameLogic = () => {
 
     const processTiles = (isReverse: boolean = false) => {
       for (let i = 0; i < 4; i++) {
-        let line: TileType[] = [];
+        let line: (TileType | null)[] = [];
         
         // Extract line based on direction
         if (direction === 'left' || direction === 'right') {
@@ -169,13 +177,16 @@ const useGameLogic = () => {
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         if (newGrid[i][j]) {
-          newGrid[i][j].row = i;
-          newGrid[i][j].col = j;
+          newGrid[i][j]!.row = i;
+          newGrid[i][j]!.col = j;
         }
       }
     }
 
     if (moved) {
+      // Save current state to history before updating
+      setHistory(prev => [...prev, { grid, score }]);
+      
       const gridWithNewTile = addRandomTile(newGrid);
       setGrid(gridWithNewTile);
       setScore(newScore);
@@ -235,6 +246,23 @@ const useGameLogic = () => {
     };
   }, [moveTiles]);
 
+  // Add undo functionality
+  const canUndo = useCallback((): boolean => {
+    return history.length > 0;
+  }, [history]);
+
+  const undo = useCallback(() => {
+    if (!canUndo()) return;
+    
+    const previousState = history[history.length - 1];
+    setGrid(previousState.grid.map(row => row.map(tile => 
+      tile ? { ...tile } : null
+    )));
+    setScore(previousState.score);
+    setHistory(prev => prev.slice(0, -1));
+    setGameOver(false);
+  }, [history, canUndo]);
+
   return {
     grid,
     score,
@@ -244,6 +272,8 @@ const useGameLogic = () => {
     handleKeyDown,
     resetGame,
     initializeTouchListeners,
+    canUndo,
+    undo,
   };
 };
 
