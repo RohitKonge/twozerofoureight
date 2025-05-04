@@ -37,18 +37,10 @@ const Board: React.FC = () => {
           <div className="text-base text-amber-800 font-bold uppercase tracking-wide">Score</div>
           <div className="text-4xl font-bold text-amber-900">{score}</div>
         </div>
-        <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl p-5 shadow-lg flex-1 mr-4">
+        <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl p-5 shadow-lg flex-1">
           <div className="text-base text-amber-800 font-bold uppercase tracking-wide">Best</div>
           <div className="text-4xl font-bold text-amber-900">{bestScore}</div>
         </div>
-        <button 
-          onClick={resetGame}
-          className="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-5 px-8 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center"
-          aria-label="New Game"
-        >
-          <RefreshCw size={28} className="mr-2" />
-          <span className="text-lg">New</span>
-        </button>
       </div>
 
       {/* Game board */}
