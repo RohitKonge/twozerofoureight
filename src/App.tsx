@@ -22,7 +22,7 @@ function App() {
       </main>
       
       <footer className="mt-auto py-4 text-center text-amber-700 text-sm">
-        <p>Created with ❤️ in 2025 | <a href="https://github.com/gabrielecirulli/2048" className="underline hover:text-amber-900" target="_blank" rel="noopener noreferrer">Original 2048</a> by Gabriele Cirulli</p>
+        <p>Play 2048 © 2002-2025 Adam Smith. All rights Reserved.</p>
       </footer>
       
       <GameInstructions />
