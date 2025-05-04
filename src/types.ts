@@ -22,3 +22,8 @@ export interface DeleteState {
   isDeleteMode: boolean;
   numberToDelete: number | null;
 }
+
+export interface TeleportState {
+  isTeleportMode: boolean;
+  selectedTile: TilePosition | null;
+}

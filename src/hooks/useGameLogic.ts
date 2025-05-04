@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TileType, Grid, SwapState, TilePosition, DeleteState } from '../types';
+import { TileType, Grid, SwapState, TilePosition, DeleteState, TeleportState } from '../types';
 
 // Generate a unique ID for each tile
 let nextId = 1;
@@ -27,6 +27,10 @@ const useGameLogic = () => {
   const [deleteState, setDeleteState] = useState<DeleteState>({
     isDeleteMode: false,
     numberToDelete: null,
+  });
+  const [teleportState, setTeleportState] = useState<TeleportState>({
+    isTeleportMode: false,
+    selectedTile: null,
   });
 
   // Initialize game
@@ -206,7 +210,7 @@ const useGameLogic = () => {
 
   // Handle keyboard events
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (swapState.isSwapMode || deleteState.isDeleteMode) return;
+    if (swapState.isSwapMode || deleteState.isDeleteMode || teleportState.isTeleportMode) return;
     
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
@@ -218,7 +222,7 @@ const useGameLogic = () => {
         case 'ArrowRight': moveTiles('right'); break;
       }
     }
-  }, [moveTiles, swapState.isSwapMode, deleteState.isDeleteMode]);
+  }, [moveTiles, swapState.isSwapMode, deleteState.isDeleteMode, teleportState.isTeleportMode]);
 
   // Initialize touch listeners for mobile
   const initializeTouchListeners = useCallback(() => {
@@ -304,6 +308,20 @@ const useGameLogic = () => {
     });
   }, []);
 
+  const startTeleportMode = useCallback(() => {
+    setTeleportState({
+      isTeleportMode: true,
+      selectedTile: null,
+    });
+  }, []);
+
+  const cancelTeleportMode = useCallback(() => {
+    setTeleportState({
+      isTeleportMode: false,
+      selectedTile: null,
+    });
+  }, []);
+
   const handleTileClick = useCallback((row: number, col: number) => {
     if (swapState.isSwapMode) {
       if (!swapState.firstTile) {
@@ -361,8 +379,39 @@ const useGameLogic = () => {
           cancelDeleteMode();
         }
       }
+    } else if (teleportState.isTeleportMode) {
+      if (!teleportState.selectedTile) {
+        // First click - select the tile to teleport
+        if (grid[row][col]) {
+          setTeleportState(prev => ({
+            ...prev,
+            selectedTile: { row, col }
+          }));
+        }
+      } else {
+        // Second click - teleport to empty cell
+        if (!grid[row][col]) {
+          // Save current state to history before teleporting
+          setHistory(prev => [...prev, { grid, score }]);
+
+          // Create new grid with the tile teleported
+          const newGrid = grid.map(row => row.map(tile => tile ? { ...tile } : null));
+          const teleportedTile = { ...newGrid[teleportState.selectedTile.row][teleportState.selectedTile.col]! };
+          teleportedTile.row = row;
+          teleportedTile.col = col;
+          
+          newGrid[teleportState.selectedTile.row][teleportState.selectedTile.col] = null;
+          newGrid[row][col] = teleportedTile;
+
+          setGrid(newGrid);
+          setTeleportState({
+            isTeleportMode: false,
+            selectedTile: null,
+          });
+        }
+      }
     }
-  }, [swapState, deleteState, grid, score]);
+  }, [swapState, deleteState, teleportState, grid, score]);
 
   return {
     grid,
@@ -381,6 +430,9 @@ const useGameLogic = () => {
     deleteState,
     startDeleteMode,
     cancelDeleteMode,
+    teleportState,
+    startTeleportMode,
+    cancelTeleportMode,
     handleTileClick,
   };
 };

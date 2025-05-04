@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Tile from './Tile';
-import { TileType, Grid, SwapState } from '../types';
+import { TileType, Grid, SwapState, DeleteState, TeleportState } from '../types';
 import { RefreshCw } from 'lucide-react';
 
 interface BoardProps {
@@ -12,6 +12,8 @@ interface BoardProps {
   handleKeyDown: (e: KeyboardEvent) => void;
   initializeTouchListeners: () => () => void;
   swapState: SwapState;
+  deleteState: DeleteState;
+  teleportState: TeleportState;
   handleTileClick: (row: number, col: number) => void;
 }
 
@@ -24,6 +26,8 @@ const Board: React.FC<BoardProps> = ({
   handleKeyDown, 
   initializeTouchListeners,
   swapState,
+  deleteState,
+  teleportState,
   handleTileClick 
 }) => {
   useEffect(() => {
@@ -48,7 +52,16 @@ const Board: React.FC<BoardProps> = ({
           {Array(16).fill(null).map((_, index) => (
             <div 
               key={`cell-${index}`} 
-              className="bg-amber-100/50 rounded-lg aspect-square"
+              className={`bg-amber-100/50 rounded-lg aspect-square ${
+                teleportState.isTeleportMode && teleportState.selectedTile && !grid[Math.floor(index / 4)][index % 4]
+                  ? 'cursor-pointer hover:ring-4 hover:ring-amber-400 hover:ring-opacity-50'
+                  : ''
+              }`}
+              onClick={() => {
+                if (teleportState.isTeleportMode && teleportState.selectedTile) {
+                  handleTileClick(Math.floor(index / 4), index % 4);
+                }
+              }}
             />
           ))}
           
@@ -62,7 +75,12 @@ const Board: React.FC<BoardProps> = ({
                   row={i} 
                   col={j}
                   isSwapMode={swapState.isSwapMode}
-                  isSelected={swapState.firstTile?.row === i && swapState.firstTile?.col === j}
+                  isDeleteMode={deleteState.isDeleteMode}
+                  isTeleportMode={teleportState.isTeleportMode}
+                  isSelected={
+                    (swapState.firstTile?.row === i && swapState.firstTile?.col === j) ||
+                    (teleportState.selectedTile?.row === i && teleportState.selectedTile?.col === j)
+                  }
                   onClick={handleTileClick}
                 />
               ) : null

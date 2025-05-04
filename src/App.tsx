@@ -3,7 +3,7 @@ import Board from './components/Board';
 import GameInstructions from './components/GameInstructions';
 import NewGameDialog from './components/NewGameDialog';
 import DeleteNumberDialog from './components/DeleteNumberDialog';
-import { Undo, ArrowLeftRight, Trash2 } from 'lucide-react';
+import { Undo, ArrowLeftRight, Trash2, MoveUp } from 'lucide-react';
 import useGameLogic from './hooks/useGameLogic';
 
 function App() {
@@ -11,7 +11,8 @@ function App() {
     resetGame, score, bestScore, grid, gameOver, won, 
     handleKeyDown, initializeTouchListeners, canUndo, undo,
     swapState, startSwapMode, cancelSwapMode, handleTileClick,
-    deleteState, startDeleteMode, cancelDeleteMode
+    deleteState, startDeleteMode, cancelDeleteMode,
+    teleportState, startTeleportMode, cancelTeleportMode
   } = useGameLogic();
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -57,6 +58,14 @@ function App() {
     startDeleteMode(number);
   };
 
+  const handleTeleportClick = () => {
+    if (teleportState.isTeleportMode) {
+      cancelTeleportMode();
+    } else {
+      startTeleportMode();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex flex-col items-center">
       <div className="w-full max-w-4xl mx-auto py-8 px-4">
@@ -82,6 +91,17 @@ function App() {
             <div className="text-3xl font-bold text-amber-900">{bestScore}</div>
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={handleTeleportClick}
+              className={`${
+                teleportState.isTeleportMode 
+                  ? 'bg-amber-700 hover:bg-amber-800' 
+                  : 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+              } text-white font-bold p-3 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center`}
+              aria-label="Teleport Tile"
+            >
+              <MoveUp size={24} />
+            </button>
             <button
               onClick={handleDeleteClick}
               className={`${
@@ -116,13 +136,17 @@ function App() {
         </div>
         
         {/* Mode instructions */}
-        {(deleteState.isDeleteMode || swapState.isSwapMode) && (
+        {(deleteState.isDeleteMode || swapState.isSwapMode || teleportState.isTeleportMode) && (
           <div className="text-center mb-4 text-amber-800 bg-amber-100/80 p-3 rounded-lg">
             {deleteState.isDeleteMode 
-              ? `Click on ${deleteState.numberToDelete} tiles to delete them` 
-              : !swapState.firstTile 
-                ? "Select first tile to swap" 
-                : "Select second tile to swap"}
+              ? `Click on ${deleteState.numberToDelete} tiles to delete them`
+              : teleportState.isTeleportMode
+                ? !teleportState.selectedTile
+                  ? "Select a tile to teleport"
+                  : "Select an empty cell to teleport the tile to"
+                : !swapState.firstTile 
+                  ? "Select first tile to swap" 
+                  : "Select second tile to swap"}
           </div>
         )}
         
@@ -136,6 +160,8 @@ function App() {
             handleKeyDown={handleKeyDown}
             initializeTouchListeners={initializeTouchListeners}
             swapState={swapState}
+            deleteState={deleteState}
+            teleportState={teleportState}
             handleTileClick={handleTileClick}
           />
           
