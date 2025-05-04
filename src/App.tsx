@@ -33,13 +33,13 @@ function App() {
 
         {/* Score display */}
         <div className="flex justify-center mt-6 mb-8">
-          <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl p-5 shadow-lg flex-1 mr-4 max-w-[200px]">
-            <div className="text-base text-amber-800 font-bold uppercase tracking-wide">Score</div>
-            <div className="text-4xl font-bold text-amber-900">{score}</div>
+          <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl py-2 px-4 shadow-lg flex-1 mr-4 max-w-[160px] flex flex-col items-center justify-center">
+            <div className="text-2xl text-amber-800 font-bold uppercase tracking-wide">Score</div>
+            <div className="text-3xl font-bold text-amber-900">{score}</div>
           </div>
-          <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl p-5 shadow-lg flex-1 max-w-[200px]">
-            <div className="text-base text-amber-800 font-bold uppercase tracking-wide">Best</div>
-            <div className="text-4xl font-bold text-amber-900">{bestScore}</div>
+          <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl py-2 px-4 shadow-lg flex-1 max-w-[160px] flex flex-col items-center justify-center">
+            <div className="text-2xl text-amber-800 font-bold uppercase tracking-wide">Best</div>
+            <div className="text-3xl font-bold text-amber-900">{bestScore}</div>
           </div>
         </div>
         
