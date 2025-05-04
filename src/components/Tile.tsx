@@ -30,9 +30,9 @@ const Tile: React.FC<TileProps> = ({ value, row, col }) => {
   
   // Calculate font size based on value length
   const getFontSize = () => {
-    if (value < 100) return 'text-4xl md:text-5xl';
-    if (value < 1000) return 'text-3xl md:text-4xl';
-    return 'text-2xl md:text-3xl';
+    if (value < 100) return 'text-5xl md:text-6xl';
+    if (value < 1000) return 'text-4xl md:text-5xl';
+    return 'text-3xl md:text-4xl';
   };
 
   return (
@@ -41,9 +41,9 @@ const Tile: React.FC<TileProps> = ({ value, row, col }) => {
       style={{
         top: `calc(${row} * (100% / 4))`,
         left: `calc(${col} * (100% / 4))`,
-        width: 'calc(100% / 4 - 0.75rem)',
-        height: 'calc(100% / 4 - 0.75rem)',
-        transform: 'translate(0.75rem, 0.75rem)',
+        width: 'calc(100% / 4 - 1rem)',
+        height: 'calc(100% / 4 - 1rem)',
+        transform: 'translate(1rem, 1rem)',
         zIndex: 10,
       }}
     >
