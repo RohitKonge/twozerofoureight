@@ -1,20 +1,27 @@
 import React, { useEffect } from 'react';
 import Tile from './Tile';
-import { TileType } from '../types';
-import useGameLogic from '../hooks/useGameLogic';
+import { TileType, Grid } from '../types';
 import { RefreshCw } from 'lucide-react';
 
-const Board: React.FC = () => {
-  const { 
-    grid, 
-    gameOver, 
-    won,
-    score,
-    handleKeyDown, 
-    resetGame, 
-    initializeTouchListeners 
-  } = useGameLogic();
+interface BoardProps {
+  grid: Grid;
+  gameOver: boolean;
+  won: boolean;
+  score: number;
+  resetGame: () => void;
+  handleKeyDown: (e: KeyboardEvent) => void;
+  initializeTouchListeners: () => () => void;
+}
 
+const Board: React.FC<BoardProps> = ({ 
+  grid, 
+  gameOver, 
+  won, 
+  score, 
+  resetGame, 
+  handleKeyDown, 
+  initializeTouchListeners 
+}) => {
   useEffect(() => {
     // Initialize touch listeners for mobile
     const cleanupTouchListeners = initializeTouchListeners();

@@ -5,7 +5,7 @@ import { RefreshCw } from 'lucide-react';
 import useGameLogic from './hooks/useGameLogic';
 
 function App() {
-  const { resetGame, score, bestScore } = useGameLogic();
+  const { resetGame, score, bestScore, grid, gameOver, won, handleKeyDown, initializeTouchListeners } = useGameLogic();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex flex-col items-center">
@@ -34,7 +34,15 @@ function App() {
         </div>
         
         <div className="mt-4">
-          <Board />
+          <Board 
+            grid={grid}
+            gameOver={gameOver}
+            won={won}
+            score={score}
+            resetGame={resetGame}
+            handleKeyDown={handleKeyDown}
+            initializeTouchListeners={initializeTouchListeners}
+          />
           
           <div className="mt-8 text-base text-amber-700 bg-amber-50 p-6 rounded-lg shadow">
             <p className="mb-2"><strong>HOW TO PLAY:</strong> Use your arrow keys to move the tiles. When two tiles with the same number touch, they merge into one!</p>
