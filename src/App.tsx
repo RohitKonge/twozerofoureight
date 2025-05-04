@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import Board from './components/Board';
 import GameInstructions from './components/GameInstructions';
 import NewGameDialog from './components/NewGameDialog';
-import { Undo } from 'lucide-react';
+import { Undo, ArrowLeftRight } from 'lucide-react';
 import useGameLogic from './hooks/useGameLogic';
 
 function App() {
-  const { resetGame, score, bestScore, grid, gameOver, won, handleKeyDown, initializeTouchListeners, canUndo, undo } = useGameLogic();
+  const { 
+    resetGame, score, bestScore, grid, gameOver, won, 
+    handleKeyDown, initializeTouchListeners, canUndo, undo,
+    swapState, startSwapMode, cancelSwapMode, handleTileClick
+  } = useGameLogic();
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
 
   const handleNewGameClick = () => {
@@ -16,6 +20,14 @@ function App() {
   const handleConfirmNewGame = () => {
     resetGame();
     setShowNewGameDialog(false);
+  };
+
+  const handleSwapClick = () => {
+    if (swapState.isSwapMode) {
+      cancelSwapMode();
+    } else {
+      startSwapMode();
+    }
   };
 
   return (
@@ -32,7 +44,7 @@ function App() {
           </button>
         </div>
 
-        {/* Score display */}
+        {/* Score display and action buttons */}
         <div className="flex justify-center items-center gap-4 mt-6 mb-8">
           <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl py-2 px-4 shadow-lg flex-1 mr-4 max-w-[160px] flex flex-col items-center justify-center">
             <div className="text-sm text-amber-800 font-bold uppercase tracking-wide">Score</div>
@@ -42,15 +54,37 @@ function App() {
             <div className="text-sm text-amber-800 font-bold uppercase tracking-wide">Best</div>
             <div className="text-3xl font-bold text-amber-900">{bestScore}</div>
           </div>
-          <button
-            onClick={undo}
-            disabled={!canUndo()}
-            className="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold p-3 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center"
-            aria-label="Undo Move"
-          >
-            <Undo size={24} />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSwapClick}
+              className={`${
+                swapState.isSwapMode 
+                  ? 'bg-amber-700 hover:bg-amber-800' 
+                  : 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+              } text-white font-bold p-3 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center`}
+              aria-label="Swap Tiles"
+            >
+              <ArrowLeftRight size={24} />
+            </button>
+            <button
+              onClick={undo}
+              disabled={!canUndo()}
+              className="bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold p-3 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center"
+              aria-label="Undo Move"
+            >
+              <Undo size={24} />
+            </button>
+          </div>
         </div>
+        
+        {/* Swap mode instructions */}
+        {swapState.isSwapMode && (
+          <div className="text-center mb-4 text-amber-800 bg-amber-100/80 p-3 rounded-lg">
+            {!swapState.firstTile 
+              ? "Select first tile to swap" 
+              : "Select second tile to swap"}
+          </div>
+        )}
         
         <div className="mt-4">
           <Board 
@@ -61,6 +95,8 @@ function App() {
             resetGame={resetGame}
             handleKeyDown={handleKeyDown}
             initializeTouchListeners={initializeTouchListeners}
+            swapState={swapState}
+            handleTileClick={handleTileClick}
           />
           
           <div className="mt-8 text-base text-amber-700 bg-amber-50 p-6 rounded-lg shadow">

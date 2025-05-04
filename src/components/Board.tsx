@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Tile from './Tile';
-import { TileType, Grid } from '../types';
+import { TileType, Grid, SwapState } from '../types';
 import { RefreshCw } from 'lucide-react';
 
 interface BoardProps {
@@ -11,6 +11,8 @@ interface BoardProps {
   resetGame: () => void;
   handleKeyDown: (e: KeyboardEvent) => void;
   initializeTouchListeners: () => () => void;
+  swapState: SwapState;
+  handleTileClick: (row: number, col: number) => void;
 }
 
 const Board: React.FC<BoardProps> = ({ 
@@ -20,7 +22,9 @@ const Board: React.FC<BoardProps> = ({
   score, 
   resetGame, 
   handleKeyDown, 
-  initializeTouchListeners 
+  initializeTouchListeners,
+  swapState,
+  handleTileClick 
 }) => {
   useEffect(() => {
     // Initialize touch listeners for mobile
@@ -56,7 +60,10 @@ const Board: React.FC<BoardProps> = ({
                   key={`tile-${tile.id}`} 
                   value={tile.value} 
                   row={i} 
-                  col={j} 
+                  col={j}
+                  isSwapMode={swapState.isSwapMode}
+                  isSelected={swapState.firstTile?.row === i && swapState.firstTile?.col === j}
+                  onClick={handleTileClick}
                 />
               ) : null
             )

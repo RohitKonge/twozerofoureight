@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TileType, Grid } from '../types';
+import { TileType, Grid, SwapState, TilePosition } from '../types';
 
 // Generate a unique ID for each tile
 let nextId = 1;
@@ -19,6 +19,11 @@ const useGameLogic = () => {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [history, setHistory] = useState<GameState[]>([]);
+  const [swapState, setSwapState] = useState<SwapState>({
+    isSwapMode: false,
+    firstTile: null,
+    secondTile: null,
+  });
 
   // Initialize game
   useEffect(() => {
@@ -197,6 +202,8 @@ const useGameLogic = () => {
 
   // Handle keyboard events
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (swapState.isSwapMode) return;
+    
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
       
@@ -207,7 +214,7 @@ const useGameLogic = () => {
         case 'ArrowRight': moveTiles('right'); break;
       }
     }
-  }, [moveTiles]);
+  }, [moveTiles, swapState.isSwapMode]);
 
   // Initialize touch listeners for mobile
   const initializeTouchListeners = useCallback(() => {
@@ -263,6 +270,59 @@ const useGameLogic = () => {
     setGameOver(false);
   }, [history, canUndo]);
 
+  const startSwapMode = useCallback(() => {
+    setSwapState({
+      isSwapMode: true,
+      firstTile: null,
+      secondTile: null,
+    });
+  }, []);
+
+  const cancelSwapMode = useCallback(() => {
+    setSwapState({
+      isSwapMode: false,
+      firstTile: null,
+      secondTile: null,
+    });
+  }, []);
+
+  const handleTileClick = useCallback((row: number, col: number) => {
+    if (!swapState.isSwapMode || !grid[row][col]) return;
+
+    if (!swapState.firstTile) {
+      setSwapState(prev => ({
+        ...prev,
+        firstTile: { row, col }
+      }));
+    } else if (!swapState.secondTile && (row !== swapState.firstTile.row || col !== swapState.firstTile.col)) {
+      // Save current state to history before swapping
+      setHistory(prev => [...prev, { grid, score }]);
+
+      // Perform the swap
+      const newGrid = grid.map(row => row.map(tile => tile ? { ...tile } : null));
+      const temp = newGrid[row][col];
+      newGrid[row][col] = newGrid[swapState.firstTile.row][swapState.firstTile.col];
+      newGrid[swapState.firstTile.row][swapState.firstTile.col] = temp;
+
+      // Update positions of swapped tiles
+      if (newGrid[row][col]) {
+        newGrid[row][col]!.row = row;
+        newGrid[row][col]!.col = col;
+      }
+      if (newGrid[swapState.firstTile.row][swapState.firstTile.col]) {
+        newGrid[swapState.firstTile.row][swapState.firstTile.col]!.row = swapState.firstTile.row;
+        newGrid[swapState.firstTile.row][swapState.firstTile.col]!.col = swapState.firstTile.col;
+      }
+
+      setGrid(newGrid);
+      setSwapState({
+        isSwapMode: false,
+        firstTile: null,
+        secondTile: null,
+      });
+    }
+  }, [swapState, grid]);
+
   return {
     grid,
     score,
@@ -274,6 +334,10 @@ const useGameLogic = () => {
     initializeTouchListeners,
     canUndo,
     undo,
+    swapState,
+    startSwapMode,
+    cancelSwapMode,
+    handleTileClick,
   };
 };
 

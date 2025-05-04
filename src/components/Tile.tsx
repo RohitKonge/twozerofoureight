@@ -4,9 +4,12 @@ interface TileProps {
   value: number;
   row: number;
   col: number;
+  isSwapMode?: boolean;
+  isSelected?: boolean;
+  onClick?: (row: number, col: number) => void;
 }
 
-const Tile: React.FC<TileProps> = ({ value, row, col }) => {
+const Tile: React.FC<TileProps> = ({ value, row, col, isSwapMode, isSelected, onClick }) => {
   // Calculate tile colors based on value
   const getTileColors = () => {
     const colorMap: Record<number, { bg: string, text: string }> = {
@@ -37,7 +40,11 @@ const Tile: React.FC<TileProps> = ({ value, row, col }) => {
 
   return (
     <div 
-      className={`absolute rounded-lg aspect-square flex items-center justify-center font-bold transition-all duration-200 animate-pop ${bg} ${text} ${getFontSize()}`}
+      className={`absolute rounded-lg aspect-square flex items-center justify-center font-bold transition-all duration-200 animate-pop cursor-default
+        ${bg} ${text} ${getFontSize()}
+        ${isSwapMode ? 'cursor-pointer hover:ring-4 hover:ring-amber-400 hover:ring-opacity-50' : ''}
+        ${isSelected ? 'ring-4 ring-amber-400' : ''}
+      `}
       style={{
         top: `calc(${row} * (100% / 4))`,
         left: `calc(${col} * (100% / 4))`,
@@ -46,6 +53,7 @@ const Tile: React.FC<TileProps> = ({ value, row, col }) => {
         transform: 'translate(1rem, 1rem)',
         zIndex: 10,
       }}
+      onClick={() => onClick?.(row, col)}
     >
       {value}
     </div>
