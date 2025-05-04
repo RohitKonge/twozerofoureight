@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Board from './components/Board';
 import GameInstructions from './components/GameInstructions';
 import NewGameDialog from './components/NewGameDialog';
-import { Undo, ArrowLeftRight } from 'lucide-react';
+import DeleteNumberDialog from './components/DeleteNumberDialog';
+import { Undo, ArrowLeftRight, Trash2 } from 'lucide-react';
 import useGameLogic from './hooks/useGameLogic';
 
 function App() {
   const { 
     resetGame, score, bestScore, grid, gameOver, won, 
     handleKeyDown, initializeTouchListeners, canUndo, undo,
-    swapState, startSwapMode, cancelSwapMode, handleTileClick
+    swapState, startSwapMode, cancelSwapMode, handleTileClick,
+    deleteState, startDeleteMode, cancelDeleteMode
   } = useGameLogic();
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Get available numbers for deletion
+  const availableNumbers = useMemo(() => {
+    const numbers = new Set<number>();
+    grid.forEach(row => {
+      row.forEach(tile => {
+        if (tile) numbers.add(tile.value);
+      });
+    });
+    return Array.from(numbers).sort((a, b) => a - b);
+  }, [grid]);
 
   const handleNewGameClick = () => {
     setShowNewGameDialog(true);
@@ -28,6 +42,19 @@ function App() {
     } else {
       startSwapMode();
     }
+  };
+
+  const handleDeleteClick = () => {
+    if (deleteState.isDeleteMode) {
+      cancelDeleteMode();
+    } else {
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const handleSelectNumberToDelete = (number: number) => {
+    setShowDeleteDialog(false);
+    startDeleteMode(number);
   };
 
   return (
@@ -56,6 +83,17 @@ function App() {
           </div>
           <div className="flex gap-2">
             <button
+              onClick={handleDeleteClick}
+              className={`${
+                deleteState.isDeleteMode 
+                  ? 'bg-amber-700 hover:bg-amber-800' 
+                  : 'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+              } text-white font-bold p-3 rounded-xl transition-all duration-200 shadow-lg flex items-center justify-center`}
+              aria-label="Delete Tiles"
+            >
+              <Trash2 size={24} />
+            </button>
+            <button
               onClick={handleSwapClick}
               className={`${
                 swapState.isSwapMode 
@@ -77,12 +115,14 @@ function App() {
           </div>
         </div>
         
-        {/* Swap mode instructions */}
-        {swapState.isSwapMode && (
+        {/* Mode instructions */}
+        {(deleteState.isDeleteMode || swapState.isSwapMode) && (
           <div className="text-center mb-4 text-amber-800 bg-amber-100/80 p-3 rounded-lg">
-            {!swapState.firstTile 
-              ? "Select first tile to swap" 
-              : "Select second tile to swap"}
+            {deleteState.isDeleteMode 
+              ? `Click on ${deleteState.numberToDelete} tiles to delete them` 
+              : !swapState.firstTile 
+                ? "Select first tile to swap" 
+                : "Select second tile to swap"}
           </div>
         )}
         
@@ -118,6 +158,13 @@ function App() {
         isOpen={showNewGameDialog}
         onConfirm={handleConfirmNewGame}
         onCancel={() => setShowNewGameDialog(false)}
+      />
+
+      <DeleteNumberDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onSelectNumber={handleSelectNumberToDelete}
+        availableNumbers={availableNumbers}
       />
     </div>
   );

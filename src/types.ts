@@ -17,3 +17,8 @@ export interface SwapState {
   firstTile: TilePosition | null;
   secondTile: TilePosition | null;
 }
+
+export interface DeleteState {
+  isDeleteMode: boolean;
+  numberToDelete: number | null;
+}

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TileType, Grid, SwapState, TilePosition } from '../types';
+import { TileType, Grid, SwapState, TilePosition, DeleteState } from '../types';
 
 // Generate a unique ID for each tile
 let nextId = 1;
@@ -23,6 +23,10 @@ const useGameLogic = () => {
     isSwapMode: false,
     firstTile: null,
     secondTile: null,
+  });
+  const [deleteState, setDeleteState] = useState<DeleteState>({
+    isDeleteMode: false,
+    numberToDelete: null,
   });
 
   // Initialize game
@@ -202,7 +206,7 @@ const useGameLogic = () => {
 
   // Handle keyboard events
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (swapState.isSwapMode) return;
+    if (swapState.isSwapMode || deleteState.isDeleteMode) return;
     
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       e.preventDefault();
@@ -214,7 +218,7 @@ const useGameLogic = () => {
         case 'ArrowRight': moveTiles('right'); break;
       }
     }
-  }, [moveTiles, swapState.isSwapMode]);
+  }, [moveTiles, swapState.isSwapMode, deleteState.isDeleteMode]);
 
   // Initialize touch listeners for mobile
   const initializeTouchListeners = useCallback(() => {
@@ -286,42 +290,79 @@ const useGameLogic = () => {
     });
   }, []);
 
+  const startDeleteMode = useCallback((number: number) => {
+    setDeleteState({
+      isDeleteMode: true,
+      numberToDelete: number,
+    });
+  }, []);
+
+  const cancelDeleteMode = useCallback(() => {
+    setDeleteState({
+      isDeleteMode: false,
+      numberToDelete: null,
+    });
+  }, []);
+
   const handleTileClick = useCallback((row: number, col: number) => {
-    if (!swapState.isSwapMode || !grid[row][col]) return;
+    if (swapState.isSwapMode) {
+      if (!swapState.firstTile) {
+        setSwapState(prev => ({
+          ...prev,
+          firstTile: { row, col }
+        }));
+      } else if (!swapState.secondTile && (row !== swapState.firstTile.row || col !== swapState.firstTile.col)) {
+        // Save current state to history before swapping
+        setHistory(prev => [...prev, { grid, score }]);
 
-    if (!swapState.firstTile) {
-      setSwapState(prev => ({
-        ...prev,
-        firstTile: { row, col }
-      }));
-    } else if (!swapState.secondTile && (row !== swapState.firstTile.row || col !== swapState.firstTile.col)) {
-      // Save current state to history before swapping
-      setHistory(prev => [...prev, { grid, score }]);
+        // Perform the swap
+        const newGrid = grid.map(row => row.map(tile => tile ? { ...tile } : null));
+        const temp = newGrid[row][col];
+        newGrid[row][col] = newGrid[swapState.firstTile.row][swapState.firstTile.col];
+        newGrid[swapState.firstTile.row][swapState.firstTile.col] = temp;
 
-      // Perform the swap
-      const newGrid = grid.map(row => row.map(tile => tile ? { ...tile } : null));
-      const temp = newGrid[row][col];
-      newGrid[row][col] = newGrid[swapState.firstTile.row][swapState.firstTile.col];
-      newGrid[swapState.firstTile.row][swapState.firstTile.col] = temp;
+        // Update positions of swapped tiles
+        if (newGrid[row][col]) {
+          newGrid[row][col]!.row = row;
+          newGrid[row][col]!.col = col;
+        }
+        if (newGrid[swapState.firstTile.row][swapState.firstTile.col]) {
+          newGrid[swapState.firstTile.row][swapState.firstTile.col]!.row = swapState.firstTile.row;
+          newGrid[swapState.firstTile.row][swapState.firstTile.col]!.col = swapState.firstTile.col;
+        }
 
-      // Update positions of swapped tiles
-      if (newGrid[row][col]) {
-        newGrid[row][col]!.row = row;
-        newGrid[row][col]!.col = col;
+        setGrid(newGrid);
+        setSwapState({
+          isSwapMode: false,
+          firstTile: null,
+          secondTile: null,
+        });
       }
-      if (newGrid[swapState.firstTile.row][swapState.firstTile.col]) {
-        newGrid[swapState.firstTile.row][swapState.firstTile.col]!.row = swapState.firstTile.row;
-        newGrid[swapState.firstTile.row][swapState.firstTile.col]!.col = swapState.firstTile.col;
-      }
+    } else if (deleteState.isDeleteMode && deleteState.numberToDelete !== null) {
+      const clickedTile = grid[row][col];
+      if (clickedTile && clickedTile.value === deleteState.numberToDelete) {
+        // Save current state to history before deleting
+        setHistory(prev => [...prev, { grid, score }]);
 
-      setGrid(newGrid);
-      setSwapState({
-        isSwapMode: false,
-        firstTile: null,
-        secondTile: null,
-      });
+        // Create new grid with the tile deleted
+        const newGrid = grid.map(row => row.map(tile => tile ? { ...tile } : null));
+        newGrid[row][col] = null;
+
+        setGrid(newGrid);
+        
+        // Check if there are more tiles with the same number
+        const hasMoreSameNumber = grid.some((row, i) => 
+          row.some((tile, j) => 
+            tile?.value === deleteState.numberToDelete && (i !== row || j !== col)
+          )
+        );
+
+        if (!hasMoreSameNumber) {
+          cancelDeleteMode();
+        }
+      }
     }
-  }, [swapState, grid]);
+  }, [swapState, deleteState, grid, score]);
 
   return {
     grid,
@@ -337,6 +378,9 @@ const useGameLogic = () => {
     swapState,
     startSwapMode,
     cancelSwapMode,
+    deleteState,
+    startDeleteMode,
+    cancelDeleteMode,
     handleTileClick,
   };
 };
