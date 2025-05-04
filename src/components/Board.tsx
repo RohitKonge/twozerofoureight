@@ -7,10 +7,9 @@ import { RefreshCw } from 'lucide-react';
 const Board: React.FC = () => {
   const { 
     grid, 
-    score, 
-    bestScore, 
     gameOver, 
     won,
+    score,
     handleKeyDown, 
     resetGame, 
     initializeTouchListeners 
@@ -31,18 +30,6 @@ const Board: React.FC = () => {
 
   return (
     <div className="relative w-full max-w-lg mx-auto">
-      {/* Score display */}
-      <div className="flex justify-between mb-8">
-        <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl p-5 shadow-lg flex-1 mr-4">
-          <div className="text-base text-amber-800 font-bold uppercase tracking-wide">Score</div>
-          <div className="text-4xl font-bold text-amber-900">{score}</div>
-        </div>
-        <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl p-5 shadow-lg flex-1">
-          <div className="text-base text-amber-800 font-bold uppercase tracking-wide">Best</div>
-          <div className="text-4xl font-bold text-amber-900">{bestScore}</div>
-        </div>
-      </div>
-
       {/* Game board */}
       <div className="bg-gradient-to-br from-amber-200 to-amber-300 rounded-xl p-6 shadow-xl">
         <div className="relative grid grid-cols-4 gap-4">
