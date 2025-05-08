@@ -1,12 +1,19 @@
 import React, { useState, useMemo } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Board from './components/Board';
 import GameInstructions from './components/GameInstructions';
 import NewGameDialog from './components/NewGameDialog';
 import DeleteNumberDialog from './components/DeleteNumberDialog';
 import { Undo, ArrowLeftRight, Trash2, MoveUp } from 'lucide-react';
 import useGameLogic from './hooks/useGameLogic';
+import About from './components/About';
+import FAQ from './components/FAQ';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
+import BlogTemplate from './components/BlogTemplate';
+import Contact from './components/Contact';
 
-function App() {
+function HomeGame() {
   const { 
     resetGame, score, bestScore, grid, gameOver, won, 
     handleKeyDown, initializeTouchListeners, canUndo, undo,
@@ -221,6 +228,53 @@ function App() {
         availableNumbers={availableNumbers}
       />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex flex-col items-center">
+        <nav className="w-full bg-amber-200 py-3 shadow mb-4">
+          <div className="max-w-4xl mx-auto flex flex-wrap gap-4 justify-center">
+            <Link to="/" className="text-amber-800 font-bold hover:underline">Home</Link>
+            <Link to="/about" className="text-amber-800 font-bold hover:underline">About</Link>
+            <Link to="/faq" className="text-amber-800 font-bold hover:underline">FAQ</Link>
+            <Link to="/blog" className="text-amber-800 font-bold hover:underline">Blog</Link>
+            <Link to="/contact" className="text-amber-800 font-bold hover:underline">Contact</Link>
+            <Link to="/privacy-policy" className="text-amber-800 font-bold hover:underline">Privacy Policy</Link>
+            <Link to="/terms" className="text-amber-800 font-bold hover:underline">Terms</Link>
+          </div>
+        </nav>
+        <Routes>
+          <Route path="/" element={<HomeGame />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/blog" element={<BlogTemplate title='How to Master 2048: Tips, Strategies & High Score Secrets' description='Discover expert strategies to win at 2048. Learn how to plan moves, avoid common mistakes, and reach the elusive 2048 tile!'>
+            <h2 className="text-2xl font-bold mt-6 mb-2">What is 2048?</h2>
+            <p>2048 is a popular sliding tile puzzle game where you combine numbers to reach the 2048 tile.</p>
+            <h2 className="text-2xl font-bold mt-6 mb-2">Top Strategies to Win</h2>
+            <ul className="list-disc pl-6 mb-4">
+              <li>Corner your highest tile</li>
+              <li>Plan ahead and avoid random moves</li>
+              <li>Keep your board balanced</li>
+              <li>Don’t chase big tiles in the middle</li>
+            </ul>
+            <h2 className="text-2xl font-bold mt-6 mb-2">Common Mistakes to Avoid</h2>
+            <ul className="list-disc pl-6 mb-4">
+              <li>Filling up the board too quickly</li>
+              <li>Ignoring the corners</li>
+              <li>Not planning for merges</li>
+            </ul>
+            <h2 className="text-2xl font-bold mt-6 mb-2">FAQ</h2>
+            <p>See our <Link to="/faq" className="text-amber-700 underline">FAQ page</Link> for more tips!</p>
+          </BlogTemplate>} />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
